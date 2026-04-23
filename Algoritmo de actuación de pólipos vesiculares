@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manejo de los Pólipos Vesiculares</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            overscroll-behavior-y: none;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Tabs styling */
+        .tab-active {
+            border-bottom-color: #2563eb !important;
+            color: #1d4ed8 !important;
+            background-color: #eff6ff;
+        }
+        .tab-inactive {
+            border-bottom-color: transparent;
+            color: #64748b;
+        }
+        .tab-inactive:hover {
+            color: #334155;
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- Header con gradiente moderno -->
+    <header class="bg-gradient-to-r from-blue-900 via-indigo-800 to-blue-900 text-white shrink-0 shadow-md relative z-20">
+        <div class="px-4 py-3 flex justify-between items-center max-w-7xl mx-auto w-full">
+            <div>
+                <h1 class="text-lg md:text-xl font-bold leading-tight tracking-tight">Manejo de los Pólipos Vesiculares</h1>
+                <p class="text-blue-200 text-xs font-medium tracking-wide">ALGORITMO CHGUV • VERSIÓN 1.0</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación por pestañas (Fija) -->
+    <div class="bg-white shadow-sm border-b border-slate-200 shrink-0 z-10">
+        <div class="max-w-7xl mx-auto px-4">
+            <nav class="flex space-x-2" aria-label="Tabs">
+                <button onclick="switchTab('informacion')" id="btn-informacion" class="tab-active py-3 px-4 border-b-2 font-semibold text-sm flex items-center transition-colors rounded-t-lg mt-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Información y Algoritmo
+                </button>
+                <button onclick="switchTab('calculadora')" id="btn-calculadora" class="tab-inactive py-3 px-4 border-b-2 font-semibold text-sm flex items-center transition-colors rounded-t-lg mt-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    Calculadora Interactiva
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal (Scroll interno si es necesario en pantallas pequeñas) -->
+    <main class="flex-1 w-full max-w-7xl mx-auto p-4 min-h-0 overflow-y-auto">
+        
+        <!-- ========================================== -->
+        <!-- PESTAÑA 1: INFORMACIÓN Y ALGORITMO (DEFAULT) -->
+        <!-- ========================================== -->
+        <div id="tab-informacion" class="h-full flex flex-col animate-[fadeIn_0.3s_ease-in-out]">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
+                <!-- Columna Algoritmo visual -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-y-auto p-5">
+                    <h2 class="text-base font-bold text-blue-900 mb-4 border-b border-slate-100 pb-2">Algoritmo de Actuación por Tamaño</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Bloque > 1 cm -->
+                        <div class="flex flex-col sm:flex-row sm:items-center p-4 rounded-xl bg-red-50 border border-red-100">
+                            <div class="w-full sm:w-1/4 mb-2 sm:mb-0">
+                                <span class="px-3 py-1 bg-red-600 text-white font-bold rounded-lg text-sm shadow-sm">> 1 cm</span>
+                            </div>
+                            <div class="w-full sm:w-3/4 sm:pl-4 sm:border-l sm:border-red-200">
+                                <span class="text-red-700 font-bold flex items-center text-sm">
+                                    <svg class="w-5 h-5 mr-2 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    Colecistectomía
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Bloque 5-9 mm -->
+                        <div class="flex flex-col sm:flex-row p-4 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="w-full sm:w-1/4 mb-3 sm:mb-0 pt-1">
+                                <span class="px-3 py-1 bg-slate-700 text-white font-bold rounded-lg text-sm shadow-sm">5 - 9 mm</span>
+                            </div>
+                            <div class="w-full sm:w-3/4 sm:pl-4 space-y-2 sm:border-l sm:border-slate-300 text-sm">
+                                <div class="bg-red-50/50 p-2.5 rounded border border-red-100">
+                                    <span class="font-bold text-red-900 block">Con FR:</span>
+                                    <span class="text-red-700 flex items-center mt-1"><div class="w-1.5 h-1.5 rounded-full bg-red-500 mr-2"></div> Colecistectomía</span>
+                                </div>
+                                <div class="bg-amber-50/50 p-2.5 rounded border border-amber-100">
+                                    <span class="font-bold text-amber-900 block">Sin FR:</span>
+                                    <span class="text-amber-800 flex items-start mt-1 leading-tight">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2 mt-1 shrink-0"></div> 
+                                        <div>
+                                            Control ECO cada 6-12 meses (Código <strong>CG36</strong>)<br>
+                                            <em class="text-xs text-amber-700/80 mt-0.5 block">Si estabilidad durante 2 años → Alta</em>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bloque < 5 mm -->
+                        <div class="flex flex-col sm:flex-row p-4 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="w-full sm:w-1/4 mb-3 sm:mb-0 pt-1">
+                                <span class="px-3 py-1 bg-slate-700 text-white font-bold rounded-lg text-sm shadow-sm">< 5 mm</span>
+                            </div>
+                            <div class="w-full sm:w-3/4 sm:pl-4 space-y-2 sm:border-l sm:border-slate-300 text-sm">
+                                <div class="bg-amber-50/50 p-2.5 rounded border border-amber-100">
+                                    <span class="font-bold text-amber-900 block">Con FR:</span>
+                                    <span class="text-amber-800 flex items-start mt-1 leading-tight">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2 mt-1 shrink-0"></div> 
+                                        <div>
+                                            Control ECO cada 6-12 meses (Código <strong>CG36</strong>)<br>
+                                            <em class="text-xs text-amber-700/80 mt-0.5 block">Si estabilidad durante 2 años → Alta</em>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="bg-emerald-50/50 p-2.5 rounded border border-emerald-100">
+                                    <span class="font-bold text-emerald-900 block">Sin FR:</span>
+                                    <span class="text-emerald-700 flex items-center mt-1"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div> Alta (no precisan seguimiento)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Info extra -->
+                <div class="space-y-4 overflow-y-auto">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                        <h3 class="text-sm font-bold text-slate-800 mb-2 border-b border-slate-100 pb-2">Factores de Riesgo (FR)</h3>
+                        <p class="text-[11px] text-slate-500 mb-2">Basta con la presencia de uno solo:</p>
+                        <ul class="space-y-1.5 text-xs text-slate-700 list-disc pl-4">
+                            <li>Edad > 60 años.</li>
+                            <li>Morfología sésil.</li>
+                            <li>Historia de colangitis esclerosante primaria.</li>
+                            <li>Etnia asiática (India).</li>
+                            <li>Engrosamiento focal de la pared > 4 mm.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-red-50 rounded-xl shadow-sm border border-red-100 p-4">
+                        <h3 class="text-sm font-bold text-red-900 mb-2 border-b border-red-200 pb-2">Indicaciones Adicionales</h3>
+                        <ul class="space-y-1.5 text-xs text-red-800 font-medium list-disc pl-4">
+                            <li>Crecimiento > 3 mm</li>
+                            <li>Síntomas biliares (independiente del tamaño)</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                        <h3 class="text-sm font-bold text-slate-800 mb-2 border-b border-slate-100 pb-2">Pólipos Múltiples</h3>
+                        <p class="text-xs text-slate-700 mb-2">Considerar siempre el de mayor tamaño.</p>
+                        <p class="text-xs text-amber-800 bg-amber-50 p-2 rounded border border-amber-100">
+                            Si son < 5 mm, pero la poliposis es <strong>extensa</strong> o hay <strong>FR</strong> → seguimiento 2 años.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl border border-slate-200 p-3 text-[10px] text-slate-500 text-center">
+                        Consorcio Hospital General Universitario de Valencia (CHGUV) • Cirugía Hepatobiliar y Pancreática (CHP) • Autor: Ramón Gómez • Basado en Guías EASL
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 2: CALCULADORA INTERACTIVA         -->
+        <!-- ========================================== -->
+        <div id="tab-calculadora" class="hidden h-full grid gap-4 lg:grid-cols-12 animate-[fadeIn_0.3s_ease-in-out]">
+            
+            <!-- Controles (Izquierda) -->
+            <div class="lg:col-span-5 bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col h-full overflow-y-auto">
+                <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    Parámetros del Paciente
+                </h2>
+
+                <div class="space-y-6 flex-1">
+                    <!-- Tamaño -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">Tamaño del Pólipo Mayor</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tamano" value="small" class="peer sr-only" onchange="calcular()">
+                                <div class="text-center px-2 py-2.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-checked:text-white transition-all shadow-sm hover:border-blue-300">
+                                    < 5 mm
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tamano" value="medium" class="peer sr-only" onchange="calcular()">
+                                <div class="text-center px-2 py-2.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-checked:text-white transition-all shadow-sm hover:border-blue-300">
+                                    5 - 9 mm
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tamano" value="large" class="peer sr-only" onchange="calcular()">
+                                <div class="text-center px-2 py-2.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-checked:text-white transition-all shadow-sm hover:border-blue-300">
+                                    > 1 cm
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Factores de Riesgo -->
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="block text-xs font-bold text-slate-700">Factores de Riesgo (FR)</label>
+                            <span class="text-[10px] text-slate-400 font-medium">Marque si aplica</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <label class="cursor-pointer"><input type="checkbox" class="peer sr-only fr-check" onchange="calcular()"><div class="px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white shadow-sm transition-all select-none">Edad > 60 años</div></label>
+                            <label class="cursor-pointer"><input type="checkbox" class="peer sr-only fr-check" onchange="calcular()"><div class="px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white shadow-sm transition-all select-none">Morfología sésil</div></label>
+                            <label class="cursor-pointer"><input type="checkbox" class="peer sr-only fr-check" onchange="calcular()"><div class="px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white shadow-sm transition-all select-none">Hist. CEP</div></label>
+                            <label class="cursor-pointer"><input type="checkbox" class="peer sr-only fr-check" onchange="calcular()"><div class="px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white shadow-sm transition-all select-none">Etnia asiática</div></label>
+                            <label class="cursor-pointer"><input type="checkbox" class="peer sr-only fr-check" onchange="calcular()"><div class="px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white shadow-sm transition-all select-none">Pared > 4 mm</div></label>
+                        </div>
+                    </div>
+
+                    <!-- Switches Adicionales -->
+                    <div class="space-y-3 pt-4 border-t border-slate-100">
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                            <div class="pr-3">
+                                <span class="block text-xs font-bold text-slate-800">Pólipos Múltiples</span>
+                                <span class="block text-[10px] text-slate-500 mt-0.5">Si < 5mm y extensa, fuerza control.</span>
+                            </div>
+                            <div class="relative inline-block w-10 h-5 align-middle select-none shrink-0">
+                                <input type="checkbox" id="multiples" class="peer sr-only" onchange="calcular()">
+                                <div class="w-10 h-5 bg-slate-300 rounded-full peer-checked:bg-blue-500 transition-colors duration-300"></div>
+                                <div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-sm"></div>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-red-200 bg-red-50 cursor-pointer hover:bg-red-100 transition-colors">
+                            <div class="pr-3">
+                                <span class="block text-xs font-bold text-red-900">Indicación Absoluta</span>
+                                <span class="block text-[10px] text-red-700 mt-0.5">Síntomas biliares o crecimiento >3 mm.</span>
+                            </div>
+                            <div class="relative inline-block w-10 h-5 align-middle select-none shrink-0">
+                                <input type="checkbox" id="sintomas-crecimiento" class="peer sr-only" onchange="calcular()">
+                                <div class="w-10 h-5 bg-red-300 rounded-full peer-checked:bg-red-600 transition-colors duration-300"></div>
+                                <div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-sm"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resultado (Derecha) -->
+            <div class="lg:col-span-7 flex flex-col h-full">
+                <!-- Tarjeta Gradiente Dinámica -->
+                <div id="resultado-card" class="flex-1 rounded-2xl shadow-lg border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col items-center justify-center p-8 transition-all duration-500 relative overflow-hidden text-center min-h-[300px]">
+                    
+                    <!-- Estado Inicial -->
+                    <div id="estado-vacio" class="z-10">
+                        <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p class="text-sm font-medium text-slate-500">Seleccione el tamaño del pólipo en el panel para ver la recomendación</p>
+                    </div>
+
+                    <!-- Contenido Dinámico -->
+                    <div id="contenido-resultado" class="hidden w-full z-10 flex flex-col items-center text-white animate-[fadeIn_0.3s_ease-in-out]">
+                        <div id="icono-resultado" class="p-4 bg-white/20 rounded-2xl backdrop-blur-md mb-4 shadow-sm"></div>
+                        <h2 id="titulo-resultado" class="text-3xl font-extrabold tracking-tight mb-2 drop-shadow-sm"></h2>
+                        <p id="texto-resultado" class="text-base font-medium text-white/95 leading-relaxed max-w-md drop-shadow-sm"></p>
+                        <p id="texto-secundario" class="text-sm mt-3 text-white/90 bg-black/15 inline-block px-4 py-1.5 rounded-lg backdrop-blur-sm"></p>
+                        
+                        <!-- Bloque super destacado CG36 exclusivo para seguimiento -->
+                        <div id="alerta-cg36" class="hidden mt-6 w-full max-w-md bg-white rounded-xl p-4 shadow-xl border-2 border-amber-400 transform transition-transform hover:scale-105">
+                            <div class="flex items-center justify-center text-amber-600 mb-1">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <span class="font-bold text-lg">CITAR A: CG36</span>
+                            </div>
+                            <p class="text-slate-600 text-xs font-medium">El seguimiento de los pólipos será realizado por la sección de CHP.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Decoración fondo -->
+                    <div class="absolute -right-16 -bottom-16 opacity-10 pointer-events-none">
+                        <svg class="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // Set info tab as default on load
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('informacion');
+        });
+
+        function switchTab(tabId) {
+            document.getElementById('tab-calculadora').classList.add('hidden');
+            document.getElementById('tab-informacion').classList.add('hidden');
+            
+            document.getElementById('btn-calculadora').className = "tab-inactive py-3 px-4 border-b-2 font-semibold text-sm flex items-center transition-colors rounded-t-lg mt-1";
+            document.getElementById('btn-informacion').className = "tab-inactive py-3 px-4 border-b-2 font-semibold text-sm flex items-center transition-colors rounded-t-lg mt-1";
+            
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).className = "tab-active py-3 px-4 border-b-2 font-semibold text-sm flex items-center transition-colors rounded-t-lg mt-1";
+        }
+
+        function calcular() {
+            const sintomas = document.getElementById('sintomas-crecimiento').checked;
+            const tamano = document.querySelector('input[name="tamano"]:checked')?.value;
+            const multiples = document.getElementById('multiples').checked;
+            
+            const frChecks = document.querySelectorAll('.fr-check');
+            let tieneFR = false;
+            frChecks.forEach(check => { if (check.checked) tieneFR = true; });
+
+            const card = document.getElementById('resultado-card');
+            const vacio = document.getElementById('estado-vacio');
+            const contenido = document.getElementById('contenido-resultado');
+            
+            const titulo = document.getElementById('titulo-resultado');
+            const texto = document.getElementById('texto-resultado');
+            const sec = document.getElementById('texto-secundario');
+            const icono = document.getElementById('icono-resultado');
+            const alertaCG36 = document.getElementById('alerta-cg36');
+
+            const svgCirugia = `<svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            const svgControl = `<svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`;
+            const svgAlta = `<svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+            card.className = "flex-1 rounded-2xl shadow-lg border flex flex-col items-center justify-center p-8 transition-all duration-500 relative overflow-hidden text-center min-h-[300px]";
+            alertaCG36.classList.add('hidden');
+
+            if (!sintomas && !tamano) {
+                card.classList.add('bg-gradient-to-br', 'from-slate-100', 'to-slate-200', 'border-slate-200');
+                vacio.classList.remove('hidden');
+                contenido.classList.add('hidden');
+                return;
+            }
+
+            vacio.classList.add('hidden');
+            contenido.classList.remove('hidden');
+            sec.classList.remove('hidden');
+
+            const aplicarEstilo = (tipo) => {
+                if (tipo === 'cirugia') {
+                    card.classList.add('bg-gradient-to-br', 'from-red-600', 'to-rose-800', 'border-red-900/20');
+                    icono.innerHTML = svgCirugia;
+                } else if (tipo === 'control') {
+                    card.classList.add('bg-gradient-to-br', 'from-amber-500', 'to-orange-600', 'border-amber-900/20');
+                    icono.innerHTML = svgControl;
+                    alertaCG36.classList.remove('hidden'); // Mostrar alerta de cita solo en controles
+                } else if (tipo === 'alta') {
+                    card.classList.add('bg-gradient-to-br', 'from-emerald-500', 'to-teal-700', 'border-emerald-900/20');
+                    icono.innerHTML = svgAlta;
+                }
+            };
+
+            // Lógica
+            if (sintomas) {
+                aplicarEstilo('cirugia');
+                titulo.textContent = 'Colecistectomía';
+                texto.textContent = 'Indicación absoluta por crecimiento >3 mm o síntomas biliares.';
+                sec.textContent = 'Independiente del tamaño o factores de riesgo.';
+            } 
+            else if (tamano === 'large') {
+                aplicarEstilo('cirugia');
+                titulo.textContent = 'Colecistectomía';
+                texto.textContent = 'Indicación directa por tamaño mayor a 1 cm.';
+                sec.classList.add('hidden');
+            }
+            else if (tamano === 'medium') {
+                if (tieneFR) {
+                    aplicarEstilo('cirugia');
+                    titulo.textContent = 'Colecistectomía';
+                    texto.textContent = 'Pólipo de 5-9 mm con presencia de Factor(es) de Riesgo.';
+                    sec.classList.add('hidden');
+                } else {
+                    aplicarEstilo('control');
+                    titulo.textContent = 'Control Ecográfico';
+                    texto.textContent = 'Pólipo de 5-9 mm sin FR. Control cada 6-12 meses.';
+                    sec.textContent = 'Si presenta estabilidad durante 2 años → ALTA.';
+                }
+            }
+            else if (tamano === 'small') {
+                if (tieneFR || multiples) {
+                    aplicarEstilo('control');
+                    titulo.textContent = 'Control Ecográfico';
+                    texto.textContent = (tieneFR) ? 'Pólipo < 5 mm con presencia de Factor(es) de Riesgo.' : 'Pólipos múltiples/extensos requieren control preventivo.';
+                    sec.textContent = 'Control cada 6-12 meses. Si hay estabilidad 2 años → ALTA.';
+                } else {
+                    aplicarEstilo('alta');
+                    titulo.textContent = 'Alta Directa';
+                    texto.textContent = 'Pólipo < 5 mm único y sin Factores de Riesgo.';
+                    sec.textContent = 'No precisan seguimiento ecográfico.';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
