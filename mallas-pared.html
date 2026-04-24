@@ -1,512 +1,603 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Info, 
-  ChevronRight, 
-  ShieldCheck, 
-  Signpost, 
-  LayoutGrid, 
-  List, 
-  RotateCcw,
-  ClipboardList,
-  AlignJustify
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Mallas CHGUV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Smooth transitions */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 pb-12">
 
-// --- DATASET ---
-const catalogData = [
-  // HERNIA INGUINAL - ABIERTA
-  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "6x11", ref: "SMH206115", pact: "5" },
-  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "10x15", ref: "SMH21015S", pact: "5" },
-  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "6x11", ref: "H60611", pact: "5" },
-  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "8x15", ref: "H60815", pact: "5" },
-  { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "MBA", name: "Tapón y malla 75mm", size: "75mm", ref: "SMP75958X", pact: "4" },
-  { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Medium", ref: "117060", pact: "3" },
-  { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Large", ref: "117070", pact: "3" },
-  { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Drcha", ref: "PP1208DR", pact: "8" },
-  { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Izda", ref: "PP1208DL", pact: "8" },
-  
-  // HERNIA INGUINAL - LAPAROSCOPIA
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "CARDIOLINK", name: "Dynamesh Endolap", size: "10x15", ref: "PV131015F1", pact: "5" },
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "IZDA 10X16", ref: "117311", pact: "2" },
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "DCHA 10X16", ref: "117321", pact: "2" },
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10x15 Dcha", ref: "TECT1510AR", pact: "3" },
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10X15 Izda", ref: "TECT1510AL", pact: "3" },
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "IZDA 11x14,5", ref: "EHB0303", pact: "3" },
-  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "DCHA 11x14,5", ref: "EHB0307", pact: "3" },
-
-  // UMBILICAL / PEQUEÑA EVENTRACIÓN
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Small", ref: "5950007", pact: "6" },
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Medium", ref: "5950008", pact: "6" },
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Large (8x8)", ref: "5950009", pact: "5" },
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "4,3", ref: "PVPS", pact: "6" },
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "6,4", ref: "PVPM", pact: "6" },
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "7,5 (6,5)", ref: "IS180-0651-UC", pact: "4" },
-  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "9,5 (8,5)", ref: "IS180-0851-UC", pact: "2" },
-
-  // EVENTRACIÓN - NO VISCERAL (EXTRAPERITONEAL)
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "20x30", ref: "092030F1", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x30", ref: "PV093030", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x45", ref: "PV093045", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "45x60", ref: "PV094560F1", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "20x15", ref: "TEM20X15G", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "30x15", ref: "TEM30X15G", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "SUMEDEX", name: "NEOPORE NEOMESH", size: "30x30", ref: "M0215001300300", pact: "2" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "20x30", ref: "SMH22030S", pact: "2" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "30x30", ref: "SMH23030S", pact: "2" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "15x15", ref: "H61515", pact: "3" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "30x30", ref: "H63030", pact: "2" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "50x50", ref: "H65050", pact: "1" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "6x12", ref: "UPA612", pact: "5" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "10x15", ref: "UPA1015", pact: "6" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "15x15", ref: "UPA1515", pact: "2" },
-  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "30x30", ref: "UPA3030", pact: "2" },
-
-  // EVENTRACIÓN - INTRA Y EXTRA PERITONEALES
-  { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "15x20", ref: "IP71520F1", pact: "2" },
-  { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "30x30", ref: "IP73030F1", pact: "2" },
-
-  // EVENTRACIÓN - INTRAPERITONEAL ABIERTA
-  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "12x15", ref: "OPHY1215", pact: "1" },
-  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "15x20", ref: "OPHY1520", pact: "2" },
-  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x25", ref: "OPHY2025", pact: "1" },
-  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x30", ref: "OPHY2030", pact: "1" },
-
-  // EVENTRACIÓN - INTRAPERITONEAL ABIERTA O LAP
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "15x20", ref: "PCDG1", pact: "1" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "20x30", ref: "PCDJ1", pact: "1" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "11x14", ref: "PEP1114-0", pact: "1" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "14x18", ref: "PEP1418-0", pact: "1" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "20x25", ref: "PEP2025-0", pact: "2" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "25x35", ref: "PEP2535-0", pact: "2" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "15x10", ref: "SYM1510", pact: "2" },
-  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "20x15", ref: "SYM2015", pact: "2" },
-
-  // COLOSTOMÍA / COLORRECTAL
-  { category: "MALLAS COLOSTOMÍA", provider: "CARDIOLINK", name: "Dynamesh IPST (Estomas)", size: "16x16X0,3", ref: "IPO70316F1", pact: "1" },
-  { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 10x15cm", ref: "GKFV1015E", pact: "1" },
-  { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 20x25cm", ref: "GKFV1520E", pact: "1" },
-
-  // TITANIZADAS
-  { category: "MALLAS TITANIZADAS", provider: "BIOCLAR", name: "TiO2MESH", size: "30X30", ref: "MFP141", pact: "1" },
-  { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "30X30", ref: "1265210UNI", pact: "2" },
-  { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "20X30", ref: "1265220UNI", pact: "2" },
-  { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "15X15", ref: "1265230UNI", pact: "2" },
-
-  // BIOLÓGICAS Y ABSORBIBLES
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "20x30", ref: "FS2030E", pact: "2" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "30X30", ref: "FS3030E", pact: "2" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "9X15", ref: "FS0915E", pact: "2" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "DUALMESH", size: "20X30X2", ref: "1DLMC203Е", pact: "1" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "BD", name: "PHASIX ST", size: "25X30", ref: "1202530G", pact: "1" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x10", ref: "ED10FS", pact: "2" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x20", ref: "ED20FS", pact: "1" },
-  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "20x30", ref: "ED32FS", pact: "1" },
-
-  // CTO
-  { category: "CTO", provider: "MBA", name: "Intra-swing IS180", size: "10x15", ref: "IS18001015 S", pact: "2" },
-  { category: "CTO", provider: "MBA", name: "Intra-swing IS253", size: "25x35", ref: "IS18002535 S", pact: "2" },
-];
-
-const uniqueCategories = [...new Set(catalogData.map(item => item.category))];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('wizard'); // 'wizard' | 'catalog'
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [catalogView, setCatalogView] = useState('grid'); // 'grid' | 'list'
-  
-  // WIZARD STATE
-  const [step, setStep] = useState(1);
-  const [wizardAnswers, setWizardAnswers] = useState({});
-  const [wizardResults, setWizardResults] = useState(null);
-
-  // --- CATALOG LOGIC ---
-  const filteredCatalog = useMemo(() => {
-    return catalogData.filter(item => {
-      const matchesSearch = 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.ref.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [searchQuery, selectedCategory]);
-
-  // --- WIZARD LOGIC ---
-  const handleWizardAnswer = (questionKey, answer, nextStep, categoriesToFilter = null) => {
-    const newAnswers = { ...wizardAnswers, [questionKey]: answer };
-    setWizardAnswers(newAnswers);
-    
-    if (categoriesToFilter) {
-      setWizardResults(catalogData.filter(item => categoriesToFilter.includes(item.category)));
-      setStep('results');
-    } else {
-      setStep(nextStep);
-    }
-  };
-
-  const resetWizard = () => {
-    setStep(1);
-    setWizardAnswers({});
-    setWizardResults(null);
-  };
-
-  // --- COMPONENTS ---
-  const Header = () => (
-    <div className="bg-slate-900 text-white rounded-b-3xl shadow-lg mb-8 p-6 md:p-8">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-3">
-            <ClipboardList className="w-8 h-8 text-blue-400" />
-            Catálogo de Mallas de Pared Abdominal
-          </h1>
-          <p className="text-slate-300 text-sm md:text-base mb-1">
-            Consorcio Hospital General Universitario de Valencia (CHGUV)
-          </p>
-          <p className="text-slate-400 text-sm">
-            Servicio de Cirugía General y del Aparato Digestivo • Sección de Pared Abdominal Compleja
-          </p>
-        </div>
-        <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 w-full md:w-auto">
-          <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Versión 1.0</p>
-          <p className="text-sm font-medium">Autor: Dr. Carlos Redondo</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const MeshCard = ({ item }) => (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
-      <div>
-        <div className="flex justify-between items-start mb-3">
-          <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold tracking-wide rounded-full uppercase">
-            {item.provider}
-          </span>
-          <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">
-            Pacto: {item.pact}
-          </span>
-        </div>
-        <h3 className="text-lg font-bold text-slate-800 mb-1 leading-tight group-hover:text-blue-600 transition-colors">
-          {item.name}
-        </h3>
-        <p className="text-sm text-slate-500 mb-4 line-clamp-2" title={item.category}>
-          {item.category}
-        </p>
-      </div>
-      
-      <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-slate-500 uppercase tracking-wider">Tamaño</span>
-          <span className="text-sm font-semibold text-slate-800">{item.size}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-slate-500 uppercase tracking-wider">Referencia</span>
-          <span className="text-sm font-mono text-slate-700">{item.ref}</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const MeshListItem = ({ item }) => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group">
-      <div className="flex-1">
-        <div className="flex items-center gap-3 mb-1">
-          <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold tracking-wide rounded-full uppercase">
-            {item.provider}
-          </span>
-          <span className="text-xs text-slate-500 truncate" title={item.category}>
-            {item.category}
-          </span>
-        </div>
-        <h3 className="text-base font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors">
-          {item.name}
-        </h3>
-      </div>
-      <div className="flex items-center gap-6 w-full md:w-auto bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-lg border md:border-none border-slate-100">
-        <div className="flex flex-col">
-          <span className="text-[10px] text-slate-500 uppercase tracking-wider">Tamaño</span>
-          <span className="text-sm font-semibold text-slate-800">{item.size}</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[10px] text-slate-500 uppercase tracking-wider">Referencia</span>
-          <span className="text-sm font-mono text-slate-700">{item.ref}</span>
-        </div>
-        <div className="flex flex-col items-end border-l border-slate-200 pl-4 ml-2">
-          <span className="text-[10px] text-slate-500 uppercase tracking-wider">Pacto</span>
-          <span className="text-sm font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded">{item.pact}</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const Wizard = () => {
-    return (
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        {step !== 'results' && (
-          <div className="bg-blue-50 p-6 border-b border-blue-100">
-            <h2 className="text-xl font-bold text-blue-900 flex items-center gap-2">
-              <Signpost className="w-5 h-5" />
-              Asistente de Decisión Clínica
-            </h2>
-            <p className="text-sm text-blue-700 mt-1">
-              Selecciona las características del defecto para filtrar las mallas recomendadas según el catálogo disponible.
-            </p>
-          </div>
-        )}
-
-        <div className="p-6 md:p-8">
-          {step === 1 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">1. ¿Qué tipo de defecto vas a tratar?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button onClick={() => handleWizardAnswer('defecto', 'inguinal', 2)} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <span className="font-medium text-slate-700">Hernia Inguinal</span>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                <button onClick={() => handleWizardAnswer('defecto', 'umbilical', 'results', ['MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <span className="font-medium text-slate-700">Hernia Umbilical / Pequeña Eventración</span>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                <button onClick={() => handleWizardAnswer('defecto', 'eventracion', 3)} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <span className="font-medium text-slate-700">Eventración Compleja</span>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                <button onClick={() => handleWizardAnswer('defecto', 'colostomia', 'results', ['MALLAS COLOSTOMÍA', 'CIRUGÍA COLORRECTAL'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <span className="font-medium text-slate-700">Estoma / Profilaxis Colorrectal</span>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
+    <!-- Header -->
+    <header class="bg-slate-900 text-white rounded-b-3xl shadow-lg mb-8 p-6 md:p-8">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-3">
+                    <i data-lucide="clipboard-list" class="w-8 h-8 text-blue-400"></i>
+                    Catálogo de Mallas de Pared Abdominal
+                </h1>
+                <p class="text-slate-300 text-sm md:text-base mb-1">
+                    Consorcio Hospital General Universitario de Valencia (CHGUV)
+                </p>
+                <p class="text-slate-400 text-sm">
+                    Servicio de Cirugía General y del Aparato Digestivo • Sección de Pared Abdominal Compleja
+                </p>
             </div>
-          )}
-
-          {step === 2 && wizardAnswers.defecto === 'inguinal' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-              <button onClick={resetWizard} className="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
-                ← Volver al inicio
-              </button>
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">2. ¿Qué abordaje quirúrgico emplearás?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button onClick={() => handleWizardAnswer('abordaje', 'abierto', 'results', ['HERNIA INGUINAL MALLAS REPARACIÓN', 'PACK REPARACIÓN HERNIA INGUINAL', 'OTRAS MALLAS REPARACIÓN HERNIA INGUINAL'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <span className="font-medium text-slate-700">Abierto (Lichtenstein, Rutkow, etc.)</span>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                <button onClick={() => handleWizardAnswer('abordaje', 'laparoscopico', 'results', ['MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <span className="font-medium text-slate-700">Laparoscópico (TEP / TAPP)</span>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 w-full md:w-auto">
+                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Versión 1.0</p>
+                <p class="text-sm font-medium">Autor: Dr. Carlos Redondo</p>
             </div>
-          )}
-
-          {step === 3 && wizardAnswers.defecto === 'eventracion' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-              <button onClick={resetWizard} className="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
-                ← Volver al inicio
-              </button>
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">2. ¿La malla estará en contacto directo con las vísceras (Intraperitoneal)?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button onClick={() => handleWizardAnswer('visceral', 'no', 'results', ['REPARACIÓN ABIERTA DE EVENTRACIONES no visceral', 'MALLAS TITANIZADAS', 'MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <div>
-                    <span className="font-medium text-slate-700 block">No (Extraperitoneal / Retromuscular)</span>
-                    <span className="text-xs text-slate-500 block mt-1">Onlay, Inlay, Sublay sin apertura peritoneal</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                <button onClick={() => handleWizardAnswer('visceral', 'si', 4)} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                   <div>
-                    <span className="font-medium text-slate-700 block">Sí (Intraperitoneal)</span>
-                    <span className="text-xs text-slate-500 block mt-1">IPOM, u otra técnica con lecho expuesto</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 4 && wizardAnswers.defecto === 'eventracion' && wizardAnswers.visceral === 'si' && (
-             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-             <button onClick={() => setStep(3)} className="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
-               ← Volver atrás
-             </button>
-             <h3 className="text-lg font-semibold text-slate-800 mb-4">3. ¿Qué tipo de material requieres?</h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-               <button onClick={() => handleWizardAnswer('material', 'sintetica', 'results', ['MALLAS INTRAPERITONEALES ABIERTA', 'MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA', 'MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                 <div>
-                   <span className="font-medium text-slate-700 block">Sintética con barrera adherencial</span>
-                   <span className="text-xs text-slate-500 block mt-1">Doble cara, recubiertas, ePTFE</span>
-                 </div>
-                 <ChevronRight className="w-5 h-5 text-slate-400" />
-               </button>
-               <button onClick={() => handleWizardAnswer('material', 'biologica', 'results', ['MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL'])} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
-                  <div>
-                   <span className="font-medium text-slate-700 block">Biológica / Biosintética Absorbible</span>
-                   <span className="text-xs text-slate-500 block mt-1">Terreno contaminado o indicaciones específicas</span>
-                 </div>
-                 <ChevronRight className="w-5 h-5 text-slate-400" />
-               </button>
-             </div>
-           </div>
-          )}
-
-          {step === 'results' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-100 pb-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <ShieldCheck className="w-6 h-6 text-green-500" />
-                    Opciones Recomendadas
-                  </h3>
-                  <p className="text-slate-500 mt-1">Hemos encontrado {wizardResults?.length || 0} mallas en el catálogo basadas en tus criterios.</p>
-                </div>
-                <button 
-                  onClick={resetWizard}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reiniciar
-                </button>
-              </div>
-
-              {wizardResults && wizardResults.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {wizardResults.map((item, idx) => (
-                    <MeshCard key={idx} item={item} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                  <p className="text-slate-500 font-medium">No se encontraron mallas exactas para esta combinación.</p>
-                  <button onClick={resetWizard} className="mt-4 text-blue-600 hover:underline">Intentar otra búsqueda</button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
-      </div>
-    );
-  };
+    </header>
 
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 pb-12">
-      <Header />
-
-      <main className="max-w-6xl mx-auto px-4 md:px-6">
+    <main class="max-w-6xl mx-auto px-4 md:px-6">
         
-        {/* Toggle View */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white rounded-full shadow-sm border border-slate-200 p-1 flex">
-            <button
-              onClick={() => setActiveTab('wizard')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
-                activeTab === 'wizard' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Asistente Interactivo
-            </button>
-            <button
-              onClick={() => setActiveTab('catalog')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
-                activeTab === 'catalog' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <List className="w-4 h-4" />
-              Catálogo Completo
-            </button>
-          </div>
+        <!-- Toggle View (Tabs) -->
+        <div class="flex justify-center mb-8">
+            <div class="bg-white rounded-full shadow-sm border border-slate-200 p-1 flex">
+                <button id="btn-tab-wizard" onclick="setTab('wizard')" class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white shadow-md">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    Asistente Interactivo
+                </button>
+                <button id="btn-tab-catalog" onclick="setTab('catalog')" class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all text-slate-600 hover:bg-slate-50">
+                    <i data-lucide="list" class="w-4 h-4"></i>
+                    Catálogo Completo
+                </button>
+            </div>
         </div>
 
-        {activeTab === 'wizard' ? (
-          <Wizard />
-        ) : (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Filters / Search */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-slate-400" />
+        <!-- WIZARD SECTION -->
+        <section id="section-wizard" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="wizard-header" class="bg-blue-50 p-6 border-b border-blue-100">
+                <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
+                    <i data-lucide="signpost" class="w-5 h-5"></i>
+                    Asistente de Decisión Clínica
+                </h2>
+                <p class="text-sm text-blue-700 mt-1">
+                    Selecciona las características del defecto para filtrar las mallas recomendadas según el catálogo disponible.
+                </p>
+            </div>
+            <div id="wizard-content" class="p-6 md:p-8">
+                <!-- Dynamic Wizard Content -->
+            </div>
+        </section>
+
+        <!-- CATALOG SECTION -->
+        <section id="section-catalog" class="space-y-6 fade-in hidden">
+            <!-- Filters / Search -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="h-5 w-5 text-slate-400"></i>
+                    </div>
+                    <input type="text" id="search-input" placeholder="BUSCAR POR MARCA, REFERENCIA O MODELO..." class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
                 </div>
-                <input
-                  type="text"
-                  placeholder="BUSCAR POR MARCA, REFERENCIA O MODELO..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase"
-                />
-              </div>
-              <div className="relative md:w-1/3">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Filter className="h-5 w-5 text-slate-400" />
+                <div class="relative md:w-1/3">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="filter" class="h-5 w-5 text-slate-400"></i>
+                    </div>
+                    <select id="category-select" class="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition-all truncate uppercase">
+                        <option value="All">TODAS LAS CATEGORÍAS</option>
+                        <!-- Dynamic Categories -->
+                    </select>
                 </div>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition-all truncate uppercase"
-                >
-                  <option value="All">TODAS LAS CATEGORÍAS</option>
-                  {uniqueCategories.map(cat => (
-                    <option key={cat} value={cat}>{cat.toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
             </div>
 
-            {/* Results count and View Toggle */}
-            <div className="flex justify-between items-center px-2">
-              <div className="text-sm text-slate-500 font-medium">
-                Mostrando {filteredCatalog.length} referencia{filteredCatalog.length !== 1 ? 's' : ''}
-              </div>
-              <div className="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
-                <button
-                  onClick={() => setCatalogView('grid')}
-                  className={`p-1.5 rounded-md transition-colors ${catalogView === 'grid' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                  title="Vista en cuadrícula"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setCatalogView('list')}
-                  className={`p-1.5 rounded-md transition-colors ${catalogView === 'list' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                  title="Vista en lista"
-                >
-                  <AlignJustify className="w-4 h-4" />
-                </button>
-              </div>
+            <!-- Results count and View Toggle -->
+            <div class="flex justify-between items-center px-2">
+                <div id="catalog-count" class="text-sm text-slate-500 font-medium">
+                    Mostrando 0 referencias
+                </div>
+                <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                    <button id="btn-view-grid" onclick="setCatalogView('grid')" class="p-1.5 rounded-md transition-colors bg-slate-100 text-blue-600 shadow-sm" title="Vista en cuadrícula">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    </button>
+                    <button id="btn-view-list" onclick="setCatalogView('list')" class="p-1.5 rounded-md transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-50" title="Vista en lista">
+                        <i data-lucide="align-justify" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
 
-            {/* Catalog Grid / List */}
-            {filteredCatalog.length > 0 ? (
-              catalogView === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredCatalog.map((item, index) => (
-                    <MeshCard key={index} item={item} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {filteredCatalog.map((item, index) => (
-                    <MeshListItem key={index} item={item} />
-                  ))}
-                </div>
-              )
-            ) : (
-              <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
-                <Info className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-1">No se encontraron resultados</h3>
-                <p className="text-slate-500">Intenta ajustar los filtros de búsqueda o la categoría seleccionada.</p>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
+            <!-- Catalog Grid / List -->
+            <div id="catalog-results">
+                <!-- Dynamic Catalog Results -->
+            </div>
+        </section>
 
-      {/* Footer Disclaimer */}
-      <footer className="max-w-6xl mx-auto px-6 mt-12 text-center border-t border-slate-200 pt-8 pb-4">
-        <p className="text-xs text-slate-400 max-w-2xl mx-auto">
-          <strong>Aviso clínico:</strong> Esta herramienta es un asistente basado en el inventario actual del CHGUV para facilitar la identificación de material. La decisión final sobre el tipo de malla, plano de colocación y técnica quirúrgica debe basarse siempre en el criterio clínico del cirujano/a, las guías de práctica clínica (EHS/AHS) y las características individuales del paciente.
+    </main>
+
+    <!-- Footer Disclaimer -->
+    <footer class="max-w-6xl mx-auto px-6 mt-12 text-center border-t border-slate-200 pt-8 pb-4">
+        <p class="text-xs text-slate-400 max-w-2xl mx-auto">
+            <strong>Aviso clínico:</strong> Esta herramienta es un asistente basado en el inventario actual del CHGUV para facilitar la identificación de material. La decisión final sobre el tipo de malla, plano de colocación y técnica quirúrgica debe basarse siempre en el criterio clínico del cirujano/a, las guías de práctica clínica (EHS/AHS) y las características individuales del paciente.
         </p>
-      </footer>
-    </div>
-  );
-}
+    </footer>
+
+    <script>
+        // --- DATASET ---
+        const catalogData = [
+            // HERNIA INGUINAL - ABIERTA
+            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "6x11", ref: "SMH206115", pact: "5" },
+            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "10x15", ref: "SMH21015S", pact: "5" },
+            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "6x11", ref: "H60611", pact: "5" },
+            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "8x15", ref: "H60815", pact: "5" },
+            { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "MBA", name: "Tapón y malla 75mm", size: "75mm", ref: "SMP75958X", pact: "4" },
+            { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Medium", ref: "117060", pact: "3" },
+            { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Large", ref: "117070", pact: "3" },
+            { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Drcha", ref: "PP1208DR", pact: "8" },
+            { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Izda", ref: "PP1208DL", pact: "8" },
+            
+            // HERNIA INGUINAL - LAPAROSCOPIA
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "CARDIOLINK", name: "Dynamesh Endolap", size: "10x15", ref: "PV131015F1", pact: "5" },
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "IZDA 10X16", ref: "117311", pact: "2" },
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "DCHA 10X16", ref: "117321", pact: "2" },
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10x15 Dcha", ref: "TECT1510AR", pact: "3" },
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10X15 Izda", ref: "TECT1510AL", pact: "3" },
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "IZDA 11x14,5", ref: "EHB0303", pact: "3" },
+            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "DCHA 11x14,5", ref: "EHB0307", pact: "3" },
+
+            // UMBILICAL / PEQUEÑA EVENTRACIÓN
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Small", ref: "5950007", pact: "6" },
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Medium", ref: "5950008", pact: "6" },
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Large (8x8)", ref: "5950009", pact: "5" },
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "4,3", ref: "PVPS", pact: "6" },
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "6,4", ref: "PVPM", pact: "6" },
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "7,5 (6,5)", ref: "IS180-0651-UC", pact: "4" },
+            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "9,5 (8,5)", ref: "IS180-0851-UC", pact: "2" },
+
+            // EVENTRACIÓN - NO VISCERAL (EXTRAPERITONEAL)
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "20x30", ref: "092030F1", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x30", ref: "PV093030", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x45", ref: "PV093045", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "45x60", ref: "PV094560F1", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "20x15", ref: "TEM20X15G", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "30x15", ref: "TEM30X15G", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "SUMEDEX", name: "NEOPORE NEOMESH", size: "30x30", ref: "M0215001300300", pact: "2" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "20x30", ref: "SMH22030S", pact: "2" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "30x30", ref: "SMH23030S", pact: "2" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "15x15", ref: "H61515", pact: "3" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "30x30", ref: "H63030", pact: "2" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "50x50", ref: "H65050", pact: "1" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "6x12", ref: "UPA612", pact: "5" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "10x15", ref: "UPA1015", pact: "6" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "15x15", ref: "UPA1515", pact: "2" },
+            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "30x30", ref: "UPA3030", pact: "2" },
+
+            // EVENTRACIÓN - INTRA Y EXTRA PERITONEALES
+            { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "15x20", ref: "IP71520F1", pact: "2" },
+            { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "30x30", ref: "IP73030F1", pact: "2" },
+
+            // EVENTRACIÓN - INTRAPERITONEAL ABIERTA
+            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "12x15", ref: "OPHY1215", pact: "1" },
+            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "15x20", ref: "OPHY1520", pact: "2" },
+            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x25", ref: "OPHY2025", pact: "1" },
+            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x30", ref: "OPHY2030", pact: "1" },
+
+            // EVENTRACIÓN - INTRAPERITONEAL ABIERTA O LAP
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "15x20", ref: "PCDG1", pact: "1" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "20x30", ref: "PCDJ1", pact: "1" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "11x14", ref: "PEP1114-0", pact: "1" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "14x18", ref: "PEP1418-0", pact: "1" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "20x25", ref: "PEP2025-0", pact: "2" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "25x35", ref: "PEP2535-0", pact: "2" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "15x10", ref: "SYM1510", pact: "2" },
+            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "20x15", ref: "SYM2015", pact: "2" },
+
+            // COLOSTOMÍA / COLORRECTAL
+            { category: "MALLAS COLOSTOMÍA", provider: "CARDIOLINK", name: "Dynamesh IPST (Estomas)", size: "16x16X0,3", ref: "IPO70316F1", pact: "1" },
+            { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 10x15cm", ref: "GKFV1015E", pact: "1" },
+            { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 20x25cm", ref: "GKFV1520E", pact: "1" },
+
+            // TITANIZADAS
+            { category: "MALLAS TITANIZADAS", provider: "BIOCLAR", name: "TiO2MESH", size: "30X30", ref: "MFP141", pact: "1" },
+            { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "30X30", ref: "1265210UNI", pact: "2" },
+            { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "20X30", ref: "1265220UNI", pact: "2" },
+            { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "15X15", ref: "1265230UNI", pact: "2" },
+
+            // BIOLÓGICAS Y ABSORBIBLES
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "20x30", ref: "FS2030E", pact: "2" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "30X30", ref: "FS3030E", pact: "2" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "9X15", ref: "FS0915E", pact: "2" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "DUALMESH", size: "20X30X2", ref: "1DLMC203Е", pact: "1" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "BD", name: "PHASIX ST", size: "25X30", ref: "1202530G", pact: "1" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x10", ref: "ED10FS", pact: "2" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x20", ref: "ED20FS", pact: "1" },
+            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "20x30", ref: "ED32FS", pact: "1" },
+
+            // CTO
+            { category: "CTO", provider: "MBA", name: "Intra-swing IS180", size: "10x15", ref: "IS18001015 S", pact: "2" },
+            { category: "CTO", provider: "MBA", name: "Intra-swing IS253", size: "25x35", ref: "IS18002535 S", pact: "2" }
+        ];
+
+        const uniqueCategories = [...new Set(catalogData.map(item => item.category))];
+
+        // --- STATE ---
+        let activeTab = 'wizard'; // 'wizard' | 'catalog'
+        let searchQuery = '';
+        let selectedCategory = 'All';
+        let catalogView = 'grid'; // 'grid' | 'list'
+        
+        let wizardStep = 1;
+        let wizardAnswers = {};
+        let wizardResults = null;
+
+        // --- DOM ELEMENTS ---
+        const sectionWizard = document.getElementById('section-wizard');
+        const sectionCatalog = document.getElementById('section-catalog');
+        const btnTabWizard = document.getElementById('btn-tab-wizard');
+        const btnTabCatalog = document.getElementById('btn-tab-catalog');
+        
+        const wizardHeader = document.getElementById('wizard-header');
+        const wizardContent = document.getElementById('wizard-content');
+        
+        const searchInput = document.getElementById('search-input');
+        const categorySelect = document.getElementById('category-select');
+        const catalogResults = document.getElementById('catalog-results');
+        const catalogCount = document.getElementById('catalog-count');
+        const btnViewGrid = document.getElementById('btn-view-grid');
+        const btnViewList = document.getElementById('btn-view-list');
+
+        // --- INITIALIZE ---
+        function init() {
+            // Populate categories
+            uniqueCategories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat.toUpperCase();
+                categorySelect.appendChild(option);
+            });
+
+            // Event Listeners
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                renderCatalog();
+            });
+
+            categorySelect.addEventListener('change', (e) => {
+                selectedCategory = e.target.value;
+                renderCatalog();
+            });
+
+            renderWizard();
+            renderCatalog();
+            updateTabUI();
+            lucide.createIcons();
+        }
+
+        // --- TAB LOGIC ---
+        window.setTab = function(tab) {
+            activeTab = tab;
+            updateTabUI();
+        };
+
+        function updateTabUI() {
+            if (activeTab === 'wizard') {
+                sectionWizard.classList.remove('hidden');
+                sectionCatalog.classList.add('hidden');
+                
+                btnTabWizard.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white shadow-md";
+                btnTabCatalog.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all text-slate-600 hover:bg-slate-50";
+            } else {
+                sectionWizard.classList.add('hidden');
+                sectionCatalog.classList.remove('hidden');
+                
+                btnTabWizard.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all text-slate-600 hover:bg-slate-50";
+                btnTabCatalog.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white shadow-md";
+            }
+        }
+
+        // --- WIZARD LOGIC ---
+        window.handleWizardAnswer = function(questionKey, answer, nextStep, categoriesToFilterStr = null) {
+            wizardAnswers[questionKey] = answer;
+            
+            if (categoriesToFilterStr) {
+                const categoriesToFilter = categoriesToFilterStr.split('|');
+                wizardResults = catalogData.filter(item => categoriesToFilter.includes(item.category));
+                wizardStep = 'results';
+            } else {
+                wizardStep = nextStep;
+            }
+            renderWizard();
+        };
+
+        window.resetWizard = function() {
+            wizardStep = 1;
+            wizardAnswers = {};
+            wizardResults = null;
+            renderWizard();
+        };
+
+        window.goBackWizard = function(step) {
+            wizardStep = step;
+            renderWizard();
+        };
+
+        function renderWizard() {
+            if (wizardStep !== 'results') {
+                wizardHeader.style.display = 'block';
+            } else {
+                wizardHeader.style.display = 'none';
+            }
+
+            let html = '';
+
+            if (wizardStep === 1) {
+                html = `
+                    <div class="space-y-4 fade-in">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">1. ¿Qué tipo de defecto vas a tratar?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button onclick="handleWizardAnswer('defecto', 'inguinal', 2)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <span class="font-medium text-slate-700">Hernia Inguinal</span>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                            <button onclick="handleWizardAnswer('defecto', 'umbilical', 'results', 'MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <span class="font-medium text-slate-700">Hernia Umbilical / Pequeña Eventración</span>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                            <button onclick="handleWizardAnswer('defecto', 'eventracion', 3)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <span class="font-medium text-slate-700">Eventración Compleja</span>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                            <button onclick="handleWizardAnswer('defecto', 'colostomia', 'results', 'MALLAS COLOSTOMÍA|CIRUGÍA COLORRECTAL')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <span class="font-medium text-slate-700">Estoma / Profilaxis Colorrectal</span>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (wizardStep === 2 && wizardAnswers.defecto === 'inguinal') {
+                html = `
+                    <div class="space-y-4 fade-in">
+                        <button onclick="resetWizard()" class="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
+                            ← Volver al inicio
+                        </button>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">2. ¿Qué abordaje quirúrgico emplearás?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button onclick="handleWizardAnswer('abordaje', 'abierto', 'results', 'HERNIA INGUINAL MALLAS REPARACIÓN|PACK REPARACIÓN HERNIA INGUINAL|OTRAS MALLAS REPARACIÓN HERNIA INGUINAL')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <span class="font-medium text-slate-700">Abierto (Lichtenstein, Rutkow, etc.)</span>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                            <button onclick="handleWizardAnswer('abordaje', 'laparoscopico', 'results', 'MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <span class="font-medium text-slate-700">Laparoscópico (TEP / TAPP)</span>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (wizardStep === 3 && wizardAnswers.defecto === 'eventracion') {
+                html = `
+                    <div class="space-y-4 fade-in">
+                        <button onclick="resetWizard()" class="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
+                            ← Volver al inicio
+                        </button>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">2. ¿La malla estará en contacto directo con las vísceras (Intraperitoneal)?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button onclick="handleWizardAnswer('visceral', 'no', 'results', 'REPARACIÓN ABIERTA DE EVENTRACIONES no visceral|MALLAS TITANIZADAS|MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <div>
+                                    <span class="font-medium text-slate-700 block">No (Extraperitoneal / Retromuscular)</span>
+                                    <span class="text-xs text-slate-500 block mt-1">Onlay, Inlay, Sublay sin apertura peritoneal</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                            <button onclick="handleWizardAnswer('visceral', 'si', 4)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <div>
+                                    <span class="font-medium text-slate-700 block">Sí (Intraperitoneal)</span>
+                                    <span class="text-xs text-slate-500 block mt-1">IPOM, u otra técnica con lecho expuesto</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (wizardStep === 4 && wizardAnswers.defecto === 'eventracion' && wizardAnswers.visceral === 'si') {
+                html = `
+                    <div class="space-y-4 fade-in">
+                        <button onclick="goBackWizard(3)" class="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
+                            ← Volver atrás
+                        </button>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">3. ¿Qué tipo de material requieres?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button onclick="handleWizardAnswer('material', 'sintetica', 'results', 'MALLAS INTRAPERITONEALES ABIERTA|MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA|MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <div>
+                                    <span class="font-medium text-slate-700 block">Sintética con barrera adherencial</span>
+                                    <span class="text-xs text-slate-500 block mt-1">Doble cara, recubiertas, ePTFE</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                            <button onclick="handleWizardAnswer('material', 'biologica', 'results', 'MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
+                                <div>
+                                    <span class="font-medium text-slate-700 block">Biológica / Biosintética Absorbible</span>
+                                    <span class="text-xs text-slate-500 block mt-1">Terreno contaminado o indicaciones específicas</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (wizardStep === 'results') {
+                const count = wizardResults ? wizardResults.length : 0;
+                let resultsHtml = '';
+
+                if (count > 0) {
+                    resultsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                    wizardResults.forEach(item => {
+                        resultsHtml += getMeshCardHtml(item);
+                    });
+                    resultsHtml += `</div>`;
+                } else {
+                    resultsHtml = `
+                        <div class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                            <p class="text-slate-500 font-medium">No se encontraron mallas exactas para esta combinación.</p>
+                            <button onclick="resetWizard()" class="mt-4 text-blue-600 hover:underline">Intentar otra búsqueda</button>
+                        </div>
+                    `;
+                }
+
+                html = `
+                    <div class="fade-in">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-100 pb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                    <i data-lucide="shield-check" class="w-6 h-6 text-green-500"></i>
+                                    Opciones Recomendadas
+                                </h3>
+                                <p class="text-slate-500 mt-1">Hemos encontrado ${count} mallas en el catálogo basadas en tus criterios.</p>
+                            </div>
+                            <button onclick="resetWizard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors flex items-center gap-2">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                Reiniciar
+                            </button>
+                        </div>
+                        ${resultsHtml}
+                    </div>
+                `;
+            }
+
+            wizardContent.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- CATALOG LOGIC ---
+        window.setCatalogView = function(view) {
+            catalogView = view;
+            
+            if (view === 'grid') {
+                btnViewGrid.className = "p-1.5 rounded-md transition-colors bg-slate-100 text-blue-600 shadow-sm";
+                btnViewList.className = "p-1.5 rounded-md transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-50";
+            } else {
+                btnViewGrid.className = "p-1.5 rounded-md transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-50";
+                btnViewList.className = "p-1.5 rounded-md transition-colors bg-slate-100 text-blue-600 shadow-sm";
+            }
+            
+            renderCatalog();
+        };
+
+        function renderCatalog() {
+            const filteredCatalog = catalogData.filter(item => {
+                const searchLower = searchQuery.toLowerCase();
+                const matchesSearch = 
+                    item.name.toLowerCase().includes(searchLower) ||
+                    item.provider.toLowerCase().includes(searchLower) ||
+                    item.ref.toLowerCase().includes(searchLower);
+                const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+
+            catalogCount.textContent = `Mostrando ${filteredCatalog.length} referencia${filteredCatalog.length !== 1 ? 's' : ''}`;
+
+            if (filteredCatalog.length > 0) {
+                if (catalogView === 'grid') {
+                    catalogResults.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        ${filteredCatalog.map(item => getMeshCardHtml(item)).join('')}
+                    </div>`;
+                } else {
+                    catalogResults.innerHTML = `<div class="flex flex-col gap-3">
+                        ${filteredCatalog.map(item => getMeshListHtml(item)).join('')}
+                    </div>`;
+                }
+            } else {
+                catalogResults.innerHTML = `
+                    <div class="text-center py-20 bg-white rounded-2xl border border-slate-200">
+                        <i data-lucide="info" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-medium text-slate-900 mb-1">No se encontraron resultados</h3>
+                        <p class="text-slate-500">Intenta ajustar los filtros de búsqueda o la categoría seleccionada.</p>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        // --- HTML TEMPLATES ---
+        function getMeshCardHtml(item) {
+            return `
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold tracking-wide rounded-full uppercase">
+                                ${item.provider}
+                            </span>
+                            <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">
+                                Pacto: ${item.pact}
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-1 leading-tight group-hover:text-blue-600 transition-colors">
+                            ${item.name}
+                        </h3>
+                        <p class="text-sm text-slate-500 mb-4 line-clamp-2" title="${item.category}">
+                            ${item.category}
+                        </p>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-slate-500 uppercase tracking-wider">Tamaño</span>
+                            <span class="text-sm font-semibold text-slate-800">${item.size}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-500 uppercase tracking-wider">Referencia</span>
+                            <span class="text-sm font-mono text-slate-700">${item.ref}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getMeshListHtml(item) {
+            return `
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold tracking-wide rounded-full uppercase">
+                                ${item.provider}
+                            </span>
+                            <span class="text-xs text-slate-500 truncate" title="${item.category}">
+                                ${item.category}
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors">
+                            ${item.name}
+                        </h3>
+                    </div>
+                    <div class="flex items-center gap-6 w-full md:w-auto bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-lg border md:border-none border-slate-100">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Tamaño</span>
+                            <span class="text-sm font-semibold text-slate-800">${item.size}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Referencia</span>
+                            <span class="text-sm font-mono text-slate-700">${item.ref}</span>
+                        </div>
+                        <div class="flex flex-col items-end border-l border-slate-200 pl-4 ml-2">
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Pacto</span>
+                            <span class="text-sm font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${item.pact}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Run
+        init();
+    </script>
+</body>
+</html>
