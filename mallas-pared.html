@@ -162,7 +162,9 @@ header.app-header {
   font-size: 15px; font-weight: 500; color: var(--text);
   transition: border-color .12s, background .12s;
 }
-.surgery-btn:hover { border-color: var(--border-strong); }
+@media (hover: hover) and (pointer: fine) {
+  .surgery-btn:hover { border-color: var(--border-strong); }
+}
 .surgery-btn:active { background: var(--surface-2); }
 .surgery-btn .arrow { color: var(--text-3); font-size: 18px; line-height: 1; }
 
@@ -194,7 +196,9 @@ header.app-header {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   transition: border-color .1s, background .1s;
 }
-.algo-opt:hover { border-color: var(--primary); background: var(--info-bg); color: var(--info-fg); }
+@media (hover: hover) and (pointer: fine) {
+  .algo-opt:hover { border-color: var(--primary); background: var(--info-bg); color: var(--info-fg); }
+}
 .algo-opt .opt-sub { font-size: 12px; color: var(--text-3); display: block; margin-top: 2px; font-weight: 400; }
 .algo-opt .opt-arrow { color: var(--text-3); font-size: 18px; flex-shrink: 0; }
 
@@ -205,7 +209,9 @@ header.app-header {
   background: var(--surface-2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); font-size: 13px; color: var(--text-3); cursor: pointer;
 }
-.algo-crumb:hover { border-color: var(--border-strong); }
+@media (hover: hover) and (pointer: fine) {
+  .algo-crumb:hover { border-color: var(--border-strong); }
+}
 .algo-crumb .crumb-q { font-weight: 600; color: var(--text-2); }
 .algo-crumb .crumb-a { color: var(--info-fg); font-weight: 500; }
 .algo-crumb .crumb-edit { margin-left: auto; font-size: 11px; color: var(--text-3); }
@@ -238,7 +244,10 @@ header.app-header {
   display: flex; flex-direction: column; gap: 10px;
   transition: border-color .12s; min-width: 0;
 }
-.mesh-card:hover { border-color: var(--border-strong); }
+@media (hover: hover) and (pointer: fine) {
+  .mesh-card:hover { border-color: var(--border-strong); }
+  .mesh-list-item:hover { border-color: var(--border-strong); }
+}
 
 /* lista de mallas */
 .mesh-list { display: grid; gap: 8px; }
@@ -248,7 +257,6 @@ header.app-header {
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
   transition: border-color .12s;
 }
-.mesh-list-item:hover { border-color: var(--border-strong); }
 
 .mesh-main { flex: 1; min-width: 0; }
 .mesh-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
