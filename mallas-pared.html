@@ -55,7 +55,7 @@ button {
 button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ---- APP SHELL ---- */
-.app { max-width: 720px; margin: 0 auto; padding: 0 16px 80px; }
+.app { max-width: 720px; margin: 0 auto; padding: 0 16px 80px; overflow: hidden; }
 
 header.app-header {
   position: sticky; top: 0; z-index: 10;
@@ -254,12 +254,18 @@ header.app-header {
 .mesh-list-item {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 12px 16px;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center; gap: 8px 16px;
+  min-width: 0; overflow: hidden;
   transition: border-color .12s;
 }
 
-.mesh-main { flex: 1; min-width: 0; }
-.mesh-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.mesh-main { min-width: 0; }
+.mesh-name {
+  font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .mesh-cat-label {
   font-size: 10.5px; color: var(--text-3); margin-top: 2px;
   text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
@@ -282,12 +288,21 @@ header.app-header {
 }
 
 .mesh-meta {
-  display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-left: auto; min-width: 0;
+  display: flex; gap: 12px; align-items: center; flex-shrink: 0;
 }
-@media (max-width: 480px) {
-  .mesh-list-item { flex-direction: column; align-items: stretch; gap: 8px; }
-  .mesh-meta { margin-left: 0; width: 100%; justify-content: flex-start; }
-  .mesh-field-divider { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 8px; width: 100%; }
+
+/* En móvil: apila en columna, meta ocupa fila completa */
+@media (max-width: 540px) {
+  .mesh-list-item {
+    grid-template-columns: 1fr;
+  }
+  .mesh-meta {
+    gap: 16px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .mesh-field-divider {
+    border-left: none; padding-left: 0;
+  }
 }
 .mesh-field { display: flex; flex-direction: column; }
 .mesh-field .lbl {
